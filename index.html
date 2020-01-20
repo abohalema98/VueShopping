@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="./products.js"></script>
+
+    <link href="./css/bootstrap.css" rel="stylesheet" />
+    <link href="./css/font-awesome.css" rel="stylesheet" />
+
+    <script src="./vueobject.js"></script>
+    <style>
+        .more {
+            color: green;
+        }
+
+        .less {
+            color: orange;
+        }
+
+        .lessthan {
+            color: red;
+        }
+
+        .card {
+            transition: all 1s;
+        }
+
+        .card:hover {
+
+            transform: scale(1.025);
+            -webkit-transform: scale(1.025);
+            -moz-transform: scale(1.025);
+
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+    <div id="mainapp">
+        <div class="container">
+
+            <div class="navbar navbar-expand-lg navbar-light bg-light bg-dark"
+                style="display: flex;justify-content: space-between;align-items: baseline;">
+                <div> <a class="navbar-brand" style="color:yellow;" href="#" @click.prevnt="showCart = false">Home</a>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <h3 class="badge" style="color: white;">{{Cart.items.length}} Item In Your Cart
+                        {{ totalPrice | currency}}</h3>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                    <button class="btn btn-outline-success my-2 my-sm-0 p-2" type="submit" @click="show()">Show
+                        Cart</button>
+                </div>
+            </div>
+            <div class="row" v-if="!showCart">
+                <div class="card col-4 card" style="width: 18rem;" v-for="proudct in products">
+                    <img :src="proudct.image" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h3 class="text-canter">{{proudct.name}}</h3 class="text-canter">
+                        <p class="card-text">{{proudct.description}}</p>
+                    </div>
+                    <div>
+                        <p class="badge">
+                            <span class="font-weight-bolder"
+                                :class="[proudct.instock > 10? 'more': '', proudct.instock < 10? 'less': '',proudct.instock == 0 ? 'lessthan' :'' ]">
+
+                                instock : {{proudct.instock}}</span>
+                        </p>
+                        <p class="badge"><span class="font-weight-bolder">Price : {{proudct.price | currency}}</span>
+                        </p>
+
+
+                        <button class="btn btn-sm bg-success" @click="adding(proudct)"
+                            :disabled="proudct.instock < 1">Add to
+                            cart</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" v-if="showCart">
+                <div class="jumbotron" v-if="Cart.items.length  == 0">
+                    <h1 class="display-4"> Your cart is Empty
+                    </h1>
+
+                </div>
+                <table class="table table-lg table-hover" v-if="showCart" style="padding: 5px;">
+                    <thead class="thead-inverse bg-dark text-white">
+                        <tr>
+                            <th>Proudct Name</th>
+                            <th>Price </th>
+                            <th>Quantity</th>
+                            <th>total price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item,index) in Cart.items" :key="index">
+                            <td scope="row">{{item.proudct.name}}</td>
+                            <td scope="row">{{item.proudct.price |currency}}</td>
+                            <td scope="row">{{item.Quantity}}
+                                <button @click="increseQ(item)" :disabled="item.proudct.instock == 0"
+                                    class="btn btn-success">+</button>
+                                <button @click="deccreseQ(item)" class="btn btn-danger"> - </button>
+
+                            </td>
+                            <td scope="row">{{item.Quantity * item.proudct.price |currency}}</td>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-right">Grand price</th>
+                            <td>{{totalPrice | currency}} </td>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-right">Taxes price</th>
+                            <td>{{totalPrice*0.1 | currency}} </td>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-right">Final price</th>
+                            <td>{{totalPrice + (totalPrice*0.1) | currency}} </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+                <button class="btn btn-success" @click="confirm()">confirm</button>
+
+
+
+
+            </div>
+
+
+
+
+
+
+        </div>
+        <!-- Container -->
+
+    </div>
+    <!-- vue div -->
+
+    <script>
+        var vm = new Vue({
+            el: '#mainapp',
+            data: {
+                products: products,
+                Cart: {
+                    items: []
+                },
+                showCart: false
+            },
+            methods: {
+                existproduct: function (proudct) {
+                    exist = null;
+                    for (let i = 0; i < this.Cart.items.length; i++) {
+                        if (this.Cart.items[i].proudct.id == proudct.id) {
+                            exist = this.Cart.items[i]
+                        }
+
+                    }
+                    return exist;
+                },
+
+                adding: function (proudct) {
+                    if (this.existproduct(proudct) == null) {
+                        this.Cart.items.push({
+
+                            proudct: proudct,
+                            Quantity: 1
+
+                        })
+                    } else {
+                        for (let j = 0; j < this.Cart.items.length; j++) {
+                            if (this.Cart.items[j].proudct.id == proudct.id) {
+                                console.log("d")
+                                this.Cart.items[j].Quantity++;
+                            } // if 
+                        } //for
+                    } //else
+                    proudct.instock--;
+                },//adding
+                show() {
+                    this.showCart = true;
+                },
+
+                increseQ: function (item) {
+                    item.Quantity++;
+                    item.proudct.instock--;
+                    console.log("incres")
+
+
+                },
+                deccreseQ: function (item) {
+                    item.Quantity--;
+                    item.proudct.instock++;
+                    if (item.Quantity == 0) {
+                        this.Cart.items.splice(this.Cart.items.indexOf(item), 1)
+                    }
+
+                    console.log("discres")
+                },
+                confirm() {
+                    this.Cart.items = []
+                }
+            },
+            computed: {
+                totalPrice: function () {
+                    var totalsalary = 0;
+                    this.Cart.items.forEach(function (item) {
+                        totalsalary += item.proudct.price * item.Quantity;
+
+                    })
+                    return totalsalary;
+                }
+
+            }, //computed
+            // texsesPrice:function(){
+            //     return this.totalPrice() *0.1 ;
+
+            // },
+            filters: {
+                currency: function (value) {
+                    var formatter = new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 0
+                    });
+                    return formatter.format(value);
+                }
+
+
+
+            } //end filters 
+
+
+
+
+        })
+
+
+    </script>
+
+
+
+    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+    <script src="./js/JQuery-3.3.1.js"></script>
+    <script src="./js/popper.js"></script>
+    <script src="./js/bootstrap.js"></script>
+
+</body>
+
+</html>
